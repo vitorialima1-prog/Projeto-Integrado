@@ -27,12 +27,12 @@ O crescimento da *Creator Economy* e do ensino a distância criou uma demanda qu
 
 ### Principais funcionalidades
 
--  **Gestão de ideias**: captura rápida de *insights* em uma caixa de entrada
--  **Workflow Kanban** com os estados de produção do conteúdo
--  **Estúdio de escrita**: editor de roteiros com formatação e histórico de versões
--  **Upload de ativos digitais** integrado ao AWS S3
--  **Estrutura curricular** em Cursos → Módulos → Aulas
--  **Automações** via scripts em Python
+- 💡 **Gestão de ideias**: captura rápida de *insights* em uma caixa de entrada
+- 📋 **Workflow Kanban** com os estados de produção do conteúdo
+- ✍️ **Estúdio de escrita**: editor de roteiros com formatação e histórico de versões
+- 📁 **Upload de ativos digitais** integrado ao AWS S3
+- 🎓 **Estrutura curricular** em Cursos → Módulos → Aulas
+- ⚙️ **Automações** via scripts em Python
 
 ## Telas
 
@@ -54,6 +54,27 @@ O crescimento da *Creator Economy* e do ensino a distância criou uma demanda qu
 | Infraestrutura | AWS (EKS, ECR, RDS, S3, CloudWatch) + Docker |
 | Segurança | JWT, BCrypt, HTTPS, adequação à LGPD |
 | Processo | Scrum com Sprints quinzenais + GitHub Projects |
+
+## Implantação
+
+<img src="tcc/imagens/Diagrama_Implantacao.png" alt="Diagrama de implantação" width="900">
+
+A aplicação roda na **AWS**, dentro de uma **VPC**, em um cluster **Amazon EKS (Kubernetes)** dividido em três *namespaces*:
+
+- **Front-end**: contêiner Nginx que serve o Next.js em exportação estática;
+- **Back-end**: contêiner com a API em Spring Boot;
+- **Automation**: contêiner com o serviço em Python (automações e geração de resumos), chamado pelo back-end.
+
+O usuário acessa pelo navegador (computador ou celular) via **HTTP**. A requisição passa pelo **Elastic Load Balancing**, que a encaminha ao front-end. Fora do cluster, a aplicação usa:
+
+| Serviço | Uso |
+|---|---|
+| Amazon RDS (MySQL) | Banco de dados relacional |
+| Amazon S3 | Armazenamento de arquivos e mídias |
+| Amazon S3 Glacier | Arquivamento dos materiais de cursos publicados há mais de 30 dias |
+| Amazon ECR | Registro das imagens Docker dos contêineres |
+| Amazon CloudWatch | Logs, métricas e alarmes |
+| Servidor SMTP | E-mails de cadastro, convites e alertas de prazo |
 
 ## Equipe
 
