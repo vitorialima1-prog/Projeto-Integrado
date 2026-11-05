@@ -1,0 +1,87 @@
+% ----------------------------------------------------------
+% Gestão do Projeto
+% ----------------------------------------------------------
+\chapter{Gestão do Projeto}
+
+Este capítulo mostra como a equipe se organiza, qual metodologia usa para trabalhar e onde o código do projeto fica guardado.
+
+\section{Organização da Equipe}
+
+Como o projeto é acadêmico, a equipe trabalha em um modelo misto: cada integrante tem um papel principal, mas todos ajudam nas outras áreas quando necessário. Os papéis e as responsabilidades de cada pessoa estão descritos a seguir.
+
+\subsection{Responsabilidades, Papéis e Atividades}
+
+\begin{itemize}
+    \item \textbf{Líder Técnico e Engenheiro de \textit{Backend} (\textit{Tech Lead}): Luciano Ricardo Paim de Araujo.} É a pessoa que decide sobre a arquitetura do sistema. Cuida da API REST (Java/Spring Boot), da segurança (JWT), da integração entre os serviços e da arquitetura na AWS. Também define os padrões de código e revisa os \textit{Pull Requests} mais importantes.
+
+    \item \textbf{\textit{Product Owner} (PO) e Analista de Documentação: Vitoria de Lima Santos.} Define o \textit{Backlog}, escolhe a ordem das funcionalidades e cuida da escrita acadêmica (ABNT). Faz o papel de ``cliente'' do projeto, conferindo se o que foi entregue atende aos requisitos pedagógicos e de negócio.
+
+    \item \textbf{Engenheiro de \textit{Front-end}: Henrique Orsoni.} Desenvolve a \textit{Single Page Application} (Next.js e React). Garante que a tela fique igual ao projeto visual (UI/UX), cuida do estado global da aplicação e do consumo correto dos \textit{endpoints} da API.
+
+    \item \textbf{DBA / Arquiteto de Dados: Renato Vanil de Oliveira.} Faz a modelagem do banco de dados relacional (MySQL), cria os índices, aplica a normalização (3FN), garante a integridade das ligações entre as tabelas e cuida das migrações do banco.
+
+    \item \textbf{Engenheiro de Automação e \textit{DevOps}: Augusto Henrique Braga Silva.} Cuida do provisionamento da infraestrutura na AWS (Amazon EKS, ECR, RDS, S3 e CloudWatch), do empacotamento em contêineres Docker, do serviço de automação em Python e da integração contínua com GitHub Actions.
+\end{itemize}
+
+\section{Metodologias de Gestão e Desenvolvimento}
+
+Para organizar o trabalho, a equipe usa o \textit{Scrum}, que é explicado a seguir.
+
+\subsection{Scrum}
+
+O \textit{Scrum} foi adotado como metodologia de desenvolvimento porque o projeto cria um produto digital novo, e nesse tipo de trabalho muita coisa ainda não é conhecida no começo. Segundo Schwaber e Sutherland \cite{schwaber2020}, criadores do \textit{framework}, o \textit{Scrum} trabalha em ciclos curtos e em partes, para prever melhor os resultados e controlar os riscos. Ele se apoia em três pilares: transparência, inspeção e adaptação.
+
+Essa forma de trabalhar ajuda no desenvolvimento do Creator Workbench, porque as funcionalidades são entregues em ciclos curtos, chamados \textit{Sprints}. Assim, é possível testar com usuários reais e ajustar os requisitos conforme o produto evolui. Os autores também explicam que o \textit{Scrum} não é um processo fechado, e sim um \textit{framework} dentro do qual cada equipe pode usar as técnicas de que precisa. Por isso ele combina bem com um projeto que começa por um MVP (Produto Mínimo Viável) e precisa mudar de acordo com o retorno do mercado.
+
+\subsubsection{Sprints}
+
+O projeto foi organizado em Sprints quinzenais, com o total de 8 Sprints no cronograma. Em cada Sprint, a equipe entrega uma parte funcional do sistema, o que permite testar a usabilidade o tempo todo. O andamento das tarefas de cada ciclo é acompanhado no quadro \textit{Kanban} do GitHub Projects, e o histórico de \textit{commits} da \textit{branch} principal registra o que foi entregue.
+
+A Tabela~\ref{tab:sprints} resume as entregas de cada Sprint e a situação atual.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Entregas por Sprint e situação atual}
+\begin{tabular}{|c|p{9cm}|c|}
+\hline
+\textbf{Sprint} & \textbf{Entregas} & \textbf{Situação} \\
+\hline
+1 & Infraestrutura na AWS e base do \textit{front-end} (Next.js 16, TypeScript, Tailwind CSS 4 e shadcn/ui) & Concluída \\
+\hline
+2 & Autenticação com JWT e cadastro em duas etapas com código enviado por e-mail & Concluída \\
+\hline
+3 & Quadro \textit{Kanban} com quatro colunas e conversão de ideia em projeto & Concluída \\
+\hline
+4 & Estrutura curricular com módulos e aulas e controle de publicação & Concluída \\
+\hline
+5 & Editor de texto rico e versionamento de roteiros & Concluída \\
+\hline
+6 & Perfil do usuário, temas de cores e modo escuro & Concluída \\
+\hline
+7 & Integração do \textit{front-end} com a API, proteção das rotas e documentação técnica & Concluída \\
+\hline
+8 & Equipes e papéis, etiquetas e votação, quadro configurável com tarefas e prazos, cursos com módulos e aulas, recuperação de senha, materiais, revisão, resumo automático, alertas de prazo, publicação e exportação de cursos, convites, planos e implantação em contêineres no Amazon EKS & Concluída \\
+\hline
+\end{tabular}
+\label{tab:sprints}
+\fonte{Elaborado pelos autores (2026), com base no GitHub Projects do repositório.}
+\end{table}
+
+\section{Repositório da Aplicação}
+
+O código-fonte e os arquivos do projeto ficam guardados em repositórios online, descritos a seguir.
+
+\subsection{Definição do Repositório}
+
+O projeto usa o \textbf{GitHub} para guardar o código. Dele aproveitamos o \textit{GitHub Actions}, que executa os testes automaticamente, e o \textit{Project Boards}, que controla as tarefas.
+
+\subsection{Link do Repositório}
+
+O código está dividido em dois repositórios, um para o \textit{front-end} e outro para o \textit{back-end}.
+
+\begin{itemize}
+    \item \textbf{\textit{Front-end}:} \url{https://github.com/HenriqueOrsoni/Creator-Workbench}
+    \item \textbf{\textit{Back-end}:} \url{https://github.com/luciano-araujo/ifsp-projeto-extensao}
+    \item \textbf{Acesso:} o repositório é público para leitura, e as \textit{branches} de produção são protegidas.
+\end{itemize}

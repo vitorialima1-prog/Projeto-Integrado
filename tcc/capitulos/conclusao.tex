@@ -1,0 +1,48 @@
+% ----------------------------------------------------------
+% Considerações Finais
+% ----------------------------------------------------------
+\chapter{Considerações Finais}
+
+O desenvolvimento do Creator Workbench mostrou que a desorganização enfrentada por criadores de conteúdo educacional digital não é um problema de disciplina pessoal, mas uma falta real no mercado de ferramentas de produtividade. Ferramentas como Trello, Notion e Asana foram feitas para o trabalho de empresas em geral e não têm a estrutura que o domínio educacional precisa. Por isso, o criador tem de adaptar o tempo todo sistemas que nunca foram pensados para a sua rotina.
+
+A proposta do Creator Workbench se mostrou viável tecnicamente e, segundo as projeções do capítulo anterior, também financeiramente. A arquitetura \textit{Client-Server} desacoplada, com \textit{front-end} em Next.js, \textit{back-end} em Java/Spring Boot, serviço de automação em Python e infraestrutura na AWS com contêineres Docker, mantém as camadas independentes e permite que o produto evolua sem prejudicar o que já está funcionando. O modelo de assinatura SaaS, com um plano Gratuito e três planos pagos (Solo, Pro e Agência), cobre o custo de infraestrutura a partir de 14 assinantes pagantes. No cenário realista, a margem chega a cerca de 86\% a partir do sétimo mês, e no cenário otimista passa de 90\%. Isso confirma que o produto pode crescer sem aumentar os custos na mesma proporção.
+
+A adoção do \textit{Scrum} com \textit{Sprints} quinzenais foi adequada ao projeto. Os ciclos curtos permitiram validar os requisitos aos poucos e corrigir o rumo antes que os desvios ficassem caros. As oito \textit{Sprints} foram concluídas. A principal lição de metodologia foi a importância das revisões de \textit{Sprint} para manter o alinhamento entre os cinco integrantes da equipe, cada um com um papel técnico diferente.
+
+Do ponto de vista acadêmico, o projeto mostrou na prática como as teorias estudadas se ligam às decisões de engenharia: a Andragogia de Knowles, a Arquitetura da Informação de Rosenfeld et al. e os princípios de \textit{ContentOps}. A hierarquia Curso $\rightarrow$ Módulo $\rightarrow$ Aula não é só uma escolha de modelagem de dados. Ela coloca no sistema a ideia andragógica de organizar o conhecimento de forma progressiva.
+
+\section{Dificuldades, Escolhas e Descartes}
+
+Esta seção reúne o que foi difícil durante o projeto, as escolhas técnicas feitas e o que ficou de fora do MVP.
+
+\textbf{Dificuldades encontradas:} a principal dificuldade técnica foi a integração entre o serviço de automação em Python (RF08) e a API principal em Java/Spring Boot, que exigiu definir com clareza o que cada lado envia e recebe, quanto tempo espera e o que acontece quando o serviço falha. Outra dificuldade foi montar a infraestrutura na AWS, com contêineres, banco de dados, armazenamento e \textit{logs} funcionando juntos. No lado da organização, coordenar cinco papéis diferentes em um projeto acadêmico com prazos fixos exigiu disciplina no uso das cerimônias do \textit{Scrum}, principalmente das revisões de \textit{Sprint}.
+
+\textbf{Escolhas justificadas:} o Java/Spring Boot foi escolhido para o \textit{back-end}, em vez de alternativas como o Node.js, porque o ecossistema Spring é maduro para criar APIs REST seguras e a equipe já o conhecia. O MySQL foi escolhido em vez de um banco NoSQL porque o domínio é muito relacional: a hierarquia Curso $\rightarrow$ Módulo $\rightarrow$ Aula, com suas regras de integridade (RN03), se encaixa bem no modelo relacional. Os contêineres Docker foram escolhidos para deixar o ambiente igual no desenvolvimento e na produção. O serviço de automação ficou separado, em Python, para que o resumo possa mudar no futuro sem mexer na API principal.
+
+\textbf{Descartes:} no levantamento de requisitos, algumas funcionalidades foram consideradas e deixadas de fora do MVP: (1) a integração direta, por API, com plataformas de cursos externas (Hotmart, Udemy), por causa das diferenças entre as APIs de terceiros e do prazo disponível, substituída pela exportação em JSON/CSV (RF11); (2) o módulo de \textit{analytics} do desempenho dos cursos publicados, que dependeria dessas plataformas externas; (3) o aplicativo \textit{mobile}, deixado para depois porque a arquitetura desacoplada já permite criá-lo no futuro; (4) a integração com um meio de pagamento, que ficou de fora porque a ativação dos planos pagos é feita pela administração do sistema nesta versão. Esses itens aparecem na próxima seção como evoluções.
+
+\section{Trabalhos Futuros}
+
+Com o MVP entregue, a equipe identificou evoluções que podem tornar o Creator Workbench mais completo. A Tabela~\ref{tab:futuros} lista essas evoluções com a prioridade sugerida para cada uma.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Trabalhos futuros e prioridade}
+\label{tab:futuros}
+\begin{tabular}{|p{5cm}|c|p{6.5cm}|}
+\hline
+\textbf{Evolução} & \textbf{Prioridade} & \textbf{Motivo} \\
+\hline
+Integração com um meio de pagamento para a cobrança dos planos & Alta & Hoje a ativação dos planos pagos é feita pela administração do sistema, e a cobrança automática permite crescer \\
+\hline
+Integração direta com APIs de plataformas de cursos (Hotmart, Eduzz) & Média & Elimina a exportação manual em JSON/CSV \\
+\hline
+Módulo de \textit{analytics} de desempenho dos cursos & Média & Mostra ao criador como os cursos publicados estão indo \\
+\hline
+Aplicativo \textit{mobile} nativo & Média & A arquitetura desacoplada já permite criar novos clientes sem mudar a API \\
+\hline
+Inteligência artificial generativa para sugerir roteiros & Baixa & Combina com o curso de ADS, mas depende de custo e de estudo de viabilidade \\
+\hline
+\end{tabular}
+\end{table}

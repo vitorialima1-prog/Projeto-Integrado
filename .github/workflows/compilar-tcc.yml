@@ -1,0 +1,27 @@
+name: Compilar TCC
+
+on:
+  push:
+    branches: [main]
+    paths: ["tcc/**"]
+  pull_request:
+    paths: ["tcc/**"]
+  workflow_dispatch:
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compilar com latexmk
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: documento.tex
+          working_directory: tcc
+
+      - name: Disponibilizar o PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: TCC-Creator-Workbench
+          path: tcc/documento.pdf

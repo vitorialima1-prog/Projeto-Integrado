@@ -1,0 +1,36 @@
+# Arquivos gerados pela compilação do LaTeX
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ind
+*.ilg
+*.lof
+*.lot
+*.out
+*.toc
+*.fls
+*.log
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.nlo
+*.nls
+*.glo
+*.gls
+*.glg
+*.acn
+*.acr
+*.alg
+
+# O PDF gerado dentro de tcc/ não vai para o Git
+# (a versão oficial fica em docs/TCC-Creator-Workbench.pdf)
+tcc/documento.pdf
+
+# Arquivos compactados (suba as pastas, não o .zip)
+*.zip
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
