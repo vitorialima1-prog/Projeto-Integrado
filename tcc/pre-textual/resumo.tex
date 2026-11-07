@@ -8,17 +8,18 @@ trabalho descreve o desenvolvimento do Creator Workbench, uma plataforma \textit
 otimizar o \textit{pipeline} de produção de criadores de conteúdo educacional digital. A 
 metodologia adotada é o Scrum, com \textit{Sprints} quinzenais, equipe de cinco integrantes 
 com papéis técnicos distintos e repositório versionado no GitHub. A arquitetura do 
-sistema segue o padrão \textit{Client-Server} desacoplado, com \textit{front-end} em React.js, 
+sistema segue o padrão \textit{Client-Server} desacoplado, com \textit{front-end} em Next.js, 
 \textit{back-end} em Java com Spring Boot, banco de dados relacional MySQL normalizado até 
-a Terceira Forma Normal e infraestrutura provisionada na Amazon Web Services. A 
+a Terceira Forma Normal e infraestrutura na Amazon Web Services, com contêineres
+Docker orquestrados pelo Amazon EKS. A 
 plataforma oferece módulos de gestão de ideias, \textit{workflow} Kanban com estados de 
 produção, editor de roteiros, \textit{upload} de ativos digitais integrado ao AWS S3, 
 automações via \textit{scripts} Python e estruturação curricular em Cursos, Módulos e Aulas. 
-A segurança é implementada por autenticação JWT, criptografia BCrypt e comunicação 
-HTTPS, em conformidade com a Lei Geral de Proteção de Dados Pessoais. A análise 
-de viabilidade financeira demonstra sustentabilidade do modelo SaaS com três planos 
-de assinatura, apresentando margem operacional superior a 90\% a partir do sétimo 
-mês no cenário realista. Os resultados indicam que uma ferramenta com semântica 
+A segurança é implementada por autenticação JWT, criptografia BCrypt e controle de
+acesso por papel, em conformidade com a Lei Geral de Proteção de Dados Pessoais. A análise 
+de viabilidade financeira demonstra sustentabilidade do modelo SaaS, com um plano Gratuito
+e três planos pagos: no cenário realista, a receita cobre o custo de infraestrutura
+desde o primeiro trimestre, e a margem operacional chega a 86,2\% a partir do sétimo mês. Os resultados indicam que uma ferramenta com semântica 
 nativa para o domínio educacional reduz a fragmentação operacional do criador e 
 cria condições técnicas para a aplicação dos princípios andragógicos na produção 
 de cursos digitais.

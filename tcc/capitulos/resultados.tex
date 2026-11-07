@@ -11,7 +11,7 @@ O escopo compreende o desenvolvimento de uma SPA (\textit{Single Page Applicatio
 
 \subsection{Regras de Negócio (RN)}
 
-As regras de negócio dizem como o sistema deve se comportar em cada situação do dia a dia do criador de conteúdo. As seis primeiras vêm do levantamento inicial do projeto.
+As regras de negócio dizem como o sistema deve se comportar em cada situação do dia a dia do criador de conteúdo. As seis primeiras vêm do levantamento inicial do projeto, e a sétima trata dos planos de assinatura.
 
 \begin{itemize}
     \item \textbf{RN01 -- Fluxo de Aprovação:} uma ``Ideia'' só pode ser convertida em ``Projeto de Conteúdo'' depois que o público-alvo e o objetivo pedagógico forem preenchidos. O sistema recusa a conversão com campos vazios ou curtos demais: o título e o público-alvo precisam ter pelo menos 3 caracteres, e o objetivo, pelo menos 10.
@@ -25,19 +25,47 @@ As regras de negócio dizem como o sistema deve se comportar em cada situação 
     \item \textbf{RN05 -- Unicidade de Identificação:} cada conteúdo (ideia ou projeto, roteiro, material, curso, módulo e aula) recebe um UUID (\textit{Universally Unique Identifier}) na criação. A API devolve esse identificador, que permite a \textit{scripts} e ferramentas externas acompanhar o mesmo conteúdo da ideia até a publicação.
 
     \item \textbf{RN06 -- Regra de Status:} um curso só é publicado se os links das aulas forem válidos. A verificação de publicação valida cada link por expressão regular (\textit{Regex}). São aceitos links do YouTube, do Vimeo e links HTTPS de plataformas de ensino (LMS) cadastradas na configuração do sistema, como Moodle e Google Classroom.
+
+    \item \textbf{RN07 -- Limites dos Planos:} o sistema controla o plano de cada equipe, e o \textit{back-end} verifica os limites de cada um (Tabela~\ref{tab:planos}). Toda equipe começa no plano Gratuito, e cada usuário administra no máximo uma equipe nesse plano. O administrador da equipe pode testar uma única vez, por 14 dias, o plano Solo, Pro ou Agência; no fim do prazo, a equipe volta sozinha ao plano Gratuito. Ao atingir um limite, o sistema bloqueia só a nova criação (novo membro, convite, projeto, curso, envio de material ou resumo) e mostra uma mensagem indicando o plano que libera o recurso. Nada é apagado: editar, revisar, baixar e publicar continuam funcionando. Na API, essa resposta usa o código HTTP 402. Para o limite, conta como projeto ativo o projeto em produção que ainda não foi aprovado na revisão.
 \end{itemize}
 
-\textbf{Detalhamento da RN06.} As expressões regulares usadas na validação são as seguintes:
+\textbf{Detalhamento da RN06.} Na publicação de um curso, o \textit{link} de conteúdo de cada aula precisa casar com uma das três expressões regulares abaixo. A comparação ignora maiúsculas e minúsculas, e todas exigem \textit{https}.
 
-\begin{small}
-\begin{verbatim}
-[PREENCHER: expressão regular do YouTube, copiada do código]
-[PREENCHER: expressão regular do Vimeo, copiada do código]
-[PREENCHER: expressão regular dos links de LMS cadastrados]
-\end{verbatim}
-\end{small}
+\begin{itemize}
+    \item \textbf{YouTube:}\\ {\small \texttt{\textasciicircum{}https://(www\textbackslash{}.|m\textbackslash{}.)?(youtube\textbackslash{}.com/}\\
+    \texttt{(watch\textbackslash{}?v=|embed/|shorts/)|youtu\textbackslash{}.be/)}\\
+    \texttt{[A-Za-z0-9\_-]\{11\}([?\&\#].*)?\$}}
+    \item \textbf{Vimeo:}\\ {\small \texttt{\textasciicircum{}https://(www\textbackslash{}.|player\textbackslash{}.)?vimeo\textbackslash{}.com/(video/)?[0-9]+([/?\#].*)?\$}}
+    \item \textbf{LMS cadastrado:}\\ {\small \texttt{\textasciicircum{}https://([a-z0-9-]+\textbackslash{}.)*(DOMINIOS)(/.*)?\$}}
+\end{itemize}
 
-Exemplos de links \textbf{válidos}: [PREENCHER: um link do YouTube, um do Vimeo e um de LMS cadastrado]. Exemplos de links \textbf{inválidos}: [PREENCHER: um link de plataforma não cadastrada e um link sem \textit{https}].
+Na expressão do LMS, \texttt{DOMINIOS} é a lista de domínios cadastrada na configuração do sistema (\texttt{app.publication.lms-domains}), unida por \texttt{|}. O padrão é \texttt{classroom\textbackslash.google\textbackslash.com}, e o domínio do Moodle de uma instituição é incluído na configuração, sem mudar o código. Uma aula com \textit{link} que não casa com nenhuma expressão aparece na verificação de publicação com o problema \texttt{INVALID\_LINK}. A Tabela~\ref{tab:rn06} mostra exemplos.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Exemplos de validação de \textit{links} (RN06)}
+\label{tab:rn06}
+\footnotesize
+\begin{tabular}{|>{\raggedright\arraybackslash}p{9.6cm}|l|>{\raggedright\arraybackslash}p{2.6cm}|}
+\hline
+\textbf{\textit{Link}} & \textbf{Resultado} & \textbf{Motivo} \\
+\hline
+\texttt{https://www.youtube.com/watch?v=aBcD3fGh1Jk} & Válido & YouTube \\
+\hline
+\texttt{https://youtu.be/aBcD3fGh1Jk} & Válido & YouTube (\textit{link} curto) \\
+\hline
+\texttt{https://vimeo.com/76979871} & Válido & Vimeo \\
+\hline
+\texttt{https://classroom.google.com/c/MTIzNDU2Nzg5MDEy} & Válido & LMS cadastrado \\
+\hline
+\texttt{https://www.dailymotion.com/video/x8abcd1} & Inválido & Plataforma não cadastrada \\
+\hline
+\texttt{http://www.youtube.com/watch?v=aBcD3fGh1Jk} & Inválido & \textit{Link} sem \textit{https} \\
+\hline
+\end{tabular}
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
 
 Durante o desenvolvimento, a equipe definiu outras regras que o sistema também aplica:
 
@@ -496,7 +524,7 @@ O SonarQube analisa o código a cada entrega e aplica um indicador de qualidade 
 
 \subsection{Cobertura e Resultados dos Testes}
 
-A cobertura dos testes do \textit{back-end} é medida pelo JaCoCo. Na versão final, a cobertura de linhas é superior a 80\%, acima da meta de 70\% definida no RNF07. A Tabela~\ref{tab:cobertura} mostra a cobertura por pacote.
+A cobertura dos testes do \textit{back-end} é medida pelo JaCoCo. A cobertura de linhas é de 95,9\%, acima da meta de 70\% definida no RNF07. A Tabela~\ref{tab:cobertura} mostra a cobertura por pacote.
 
 \begin{table}[H]
 \centering
@@ -506,22 +534,27 @@ A cobertura dos testes do \textit{back-end} é medida pelo JaCoCo. Na versão fi
 \hline
 \textbf{Pacote} & \textbf{Cobertura de linhas} \\
 \hline
-\textit{controller} & [PREENCHER]\% \\
+\textit{controller} & 100,0\% \\
 \hline
-\textit{usecase} & [PREENCHER]\% \\
+\textit{usecase} & 99,7\% \\
 \hline
-\textit{service} & [PREENCHER]\% \\
+\textit{service} & 95,9\% \\
 \hline
-\textit{config} & [PREENCHER]\% \\
+\textit{entity} & 93,8\% \\
 \hline
-\textit{entity} & [PREENCHER]\% \\
+\textit{config} & 62,7\% \\
 \hline
-\textbf{Total} & \textbf{[PREENCHER]\%} \\
+Aplicação (classe principal) & 0,0\% \\
+\hline
+\textbf{Total} & \textbf{95,9\%} \\
 \hline
 \end{tabular}
+\fonte{Relatório do JaCoCo gerado com \texttt{mvnw clean verify} em 06/11/2026.}
 \end{table}
 
-O número final de testes e o resultado da execução estão no relatório de testes da entrega: [PREENCHER: número de testes e resultado].
+O pacote \textit{config} reúne a segurança, o filtro JWT, o tratamento de erros e as rotinas agendadas. A classe de configuração do Spring Security e a classe principal da aplicação dependem do contexto do Spring e, por isso, não entram nos testes unitários, o que explica a cobertura menor nesses dois pontos.
+
+Ao todo, o \textit{back-end} tem 386 testes unitários (JUnit 5 e Mockito), todos aprovados: 0 falhas, 0 erros e 0 ignorados.
 
 \section{Segurança, Privacidade e Legislação}
 
@@ -595,75 +628,612 @@ Cada classe mostra seus atributos e métodos, com a visibilidade de cada um. As 
 
 \subsection{Dicionário de Dados}
 
-O dicionário de dados descreve cada campo das principais tabelas: nome, tipo, restrições e significado. Os nomes e os tipos abaixo devem ser conferidos com as migrações Flyway do projeto.
+O dicionário de dados descreve cada coluna das 22 tabelas do banco MySQL: nome, tipo, se aceita valor nulo, chaves e restrições, e significado. Todas as tabelas usam o motor InnoDB e a codificação utf8mb4, e toda tabela tem a coluna \texttt{id} (BIGINT com auto incremento) como chave primária. As colunas de data e hora são do tipo TIMESTAMP.
+
+Nas tabelas a seguir, PK indica chave primária, FK indica chave estrangeira e UQ indica valor único. Nas chaves estrangeiras aparece também o que acontece com a linha quando a linha referenciada é excluída: CASCADE (é excluída junto) ou SET NULL (o campo fica nulo). Abaixo de cada tabela está a migração Flyway que a cria (V1 a V10) ou a indicação ``entrega final'', para as migrações que acompanham as funcionalidades da entrega final.
 
 \begin{table}[H]
 \centering
-\caption{Dicionário de Dados: Entidade Usuário}
-\label{tab:dd-usuario}
-\begin{tabular}{|l|l|l|p{5cm}|}
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{users} (usuários cadastrados)}
+\label{tab:dd-users}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
 \hline
-\textbf{Atributo} & \textbf{Tipo} & \textbf{Restrição} & \textbf{Descrição} \\
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
 \hline
-id & BIGINT & PK, NOT NULL & Identificador único do usuário \\
+id & BIGINT & Não & PK, auto incremento & Identificador \\
 \hline
-nome & VARCHAR(150) & NOT NULL & Nome completo do usuário \\
+email & VARCHAR(255) & Não & UQ & E-mail de acesso \\
 \hline
-email & VARCHAR(255) & UNIQUE, NOT NULL & E-mail de login e de notificações \\
+password & VARCHAR(255) & Não &  & \textit{Hash} BCrypt da senha \\
 \hline
-senha\_hash & VARCHAR(255) & NOT NULL & \textit{Hash} BCrypt da senha \\
+name & VARCHAR(255) & Não &  & Nome \\
 \hline
-created\_at & TIMESTAMP & NOT NULL & Data e hora de criação do registro \\
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
 \hline
 \end{tabular}
+\par\footnotesize Migração: V1.
+\fonte{Elaborado pelos autores (2026).}
 \end{table}
 
 \begin{table}[H]
 \centering
-\caption{Dicionário de Dados: Entidade Membro da Equipe}
-\label{tab:dd-membro}
-\begin{tabular}{|l|l|l|p{5cm}|}
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{registration\_\allowbreak{}tokens} (códigos de cadastro)}
+\label{tab:dd-registration-tokens}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
 \hline
-\textbf{Atributo} & \textbf{Tipo} & \textbf{Restrição} & \textbf{Descrição} \\
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
 \hline
-id & BIGINT & PK, NOT NULL & Identificador único do membro \\
+id & BIGINT & Não & PK, auto incremento & Identificador \\
 \hline
-usuario\_id & BIGINT & FK, NOT NULL & Referência ao usuário \\
+email & VARCHAR(255) & Não & Índice & E-mail em cadastro \\
 \hline
-equipe\_id & BIGINT & FK, NOT NULL & Referência à equipe \\
+name & VARCHAR(255) & Não &  & Nome informado \\
 \hline
-papel & ENUM & NOT NULL & Papel na equipe: ADMINISTRADOR, CRIADOR, REVISOR \\
+\textit{token} & VARCHAR(6) & Não &  & Código de 6 dígitos \\
+\hline
+attempts & INT & Não & Padrão 0 & Tentativas erradas (máximo 5) \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+expires\_\allowbreak{}at & TIMESTAMP & Não &  & Vencimento (10 minutos) \\
 \hline
 \end{tabular}
+\par\footnotesize Migração: V2, V9.
+\fonte{Elaborado pelos autores (2026).}
 \end{table}
 
 \begin{table}[H]
 \centering
-\small
-\caption{Dicionário de Dados: Entidade Projeto}
-\label{tab:dd-projeto}
-\begin{tabular}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{2.8cm}|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{4.8cm}|}
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{password\_\allowbreak{}reset\_\allowbreak{}tokens} (códigos de recuperação de senha)}
+\label{tab:dd-password-reset-tokens}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
 \hline
-\textbf{Atributo} & \textbf{Tipo} & \textbf{Restrição} & \textbf{Descrição} \\
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
 \hline
-id & BIGINT & PK, NOT NULL & Identificador único do projeto \\
+id & BIGINT & Não & PK, auto incremento & Identificador \\
 \hline
-uuid & CHAR(36) & UNIQUE, NOT NULL & Identificador público para automações (RN05) \\
+email & VARCHAR(255) & Não & Índice & E-mail da conta \\
 \hline
-titulo & VARCHAR(255) & NOT NULL & Título do conteúdo em produção \\
+\textit{token} & VARCHAR(6) & Não &  & Código de 6 dígitos \\
 \hline
-publico\_alvo & TEXT & NOT NULL & Público-alvo (obrigatório para converter, RN01) \\
+attempts & INT & Não & Padrão 0 & Tentativas erradas (máximo 5) \\
 \hline
-objetivo\_pedagogico & TEXT & NOT NULL & Objetivo pedagógico (obrigatório, RN01) \\
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
 \hline
-coluna\_id & BIGINT & FK, NOT NULL & Coluna do quadro em que o projeto está \\
-\hline
-prazo & DATE & NULL & Data de entrega do projeto \\
-\hline
-equipe\_id & BIGINT & FK, NOT NULL & Equipe dona do projeto \\
+expires\_\allowbreak{}at & TIMESTAMP & Não &  & Vencimento (10 minutos) \\
 \hline
 \end{tabular}
-\par\small Fonte: Produzido pelos autores.
+\par\footnotesize Migração: V8.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{email\_\allowbreak{}change\_\allowbreak{}tokens} (códigos de troca de e-mail)}
+\label{tab:dd-email-change-tokens}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+user\_\allowbreak{}id & BIGINT & Não & FK users, CASCADE; UQ & Usuário que pediu a troca \\
+\hline
+new\_\allowbreak{}email & VARCHAR(255) & Não &  & Novo e-mail \\
+\hline
+\textit{token} & VARCHAR(6) & Não &  & Código de 6 dígitos \\
+\hline
+attempts & INT & Não & Padrão 0 & Tentativas erradas (máximo 5) \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+expires\_\allowbreak{}at & TIMESTAMP & Não &  & Vencimento (10 minutos) \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{teams} (equipes e seus planos)}
+\label{tab:dd-teams}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+name & VARCHAR(120) & Não &  & Nome da equipe \\
+\hline
+plan & ENUM('GRATUITO',\allowbreak 'SOLO',\allowbreak 'PRO',\allowbreak 'AGENCIA') & Não & Padrão GRATUITO & Plano da equipe \\
+\hline
+plan\_\allowbreak{}source & ENUM('FREE',\allowbreak 'TRIAL',\allowbreak 'MANUAL') & Não & Padrão FREE & Origem do plano (gratuito, teste ou ativação) \\
+\hline
+plan\_\allowbreak{}expires\_\allowbreak{}at & TIMESTAMP & Sim &  & Fim do teste ou do plano pago \\
+\hline
+trial\_\allowbreak{}used\_\allowbreak{}at & TIMESTAMP & Sim &  & Data em que o teste grátis foi usado \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V6 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{team\_\allowbreak{}members} (participação de usuários nas equipes)}
+\label{tab:dd-team-members}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+team\_\allowbreak{}id & BIGINT & Não & FK teams, CASCADE & Equipe \\
+\hline
+user\_\allowbreak{}id & BIGINT & Não & FK users, CASCADE & Usuário \\
+\hline
+role & ENUM('ADMIN',\allowbreak 'CREATOR',\allowbreak 'REVIEWER') & Não & Padrão CREATOR & Papel na equipe \\
+\hline
+joined\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de entrada \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V6. Restrição da tabela: UQ (team\_\allowbreak{}id, user\_\allowbreak{}id).
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{team\_\allowbreak{}invites} (convites por e-mail)}
+\label{tab:dd-team-invites}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+team\_\allowbreak{}id & BIGINT & Não & FK teams, CASCADE & Equipe \\
+\hline
+email & VARCHAR(255) & Não &  & E-mail convidado \\
+\hline
+role & ENUM('ADMIN',\allowbreak 'CREATOR',\allowbreak 'REVIEWER') & Não &  & Papel oferecido \\
+\hline
+\textit{token} & VARCHAR(64) & Não & UQ & \textit{Hash} SHA-256 do \textit{token} do link \\
+\hline
+status & ENUM('PENDING',\allowbreak 'ACCEPTED') & Não & Padrão PENDING & Situação \\
+\hline
+invited\_\allowbreak{}by & BIGINT & Sim & FK users, SET NULL & Quem convidou \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+expires\_\allowbreak{}at & TIMESTAMP & Não &  & Vencimento (7 dias) \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{board\_\allowbreak{}columns} (colunas do quadro)}
+\label{tab:dd-board-columns}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+team\_\allowbreak{}id & BIGINT & Não & FK teams, CASCADE & Equipe \\
+\hline
+name & VARCHAR(80) & Não &  & Nome da coluna \\
+\hline
+sort\_\allowbreak{}order & INT & Não & Padrão 0 & Posição \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V6.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{tags} (etiquetas da equipe)}
+\label{tab:dd-tags}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+team\_\allowbreak{}id & BIGINT & Não & FK teams, CASCADE & Equipe \\
+\hline
+name & VARCHAR(40) & Não &  & Nome \\
+\hline
+color & CHAR(7) & Não &  & Cor \#RRGGBB \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final. Restrição da tabela: UQ (team\_\allowbreak{}id, name).
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{kanban\_\allowbreak{}items} (ideias e projetos)}
+\label{tab:dd-kanban-items}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+uuid & CHAR(36) & Não & UQ & Identificador público UUID (RN05) \\
+\hline
+title & VARCHAR(255) & Não &  & Título \\
+\hline
+description & TEXT & Sim &  & Descrição \\
+\hline
+state & ENUM('IDEATION',\allowbreak 'IN\_\allowbreak{}PRODUCTION') & Não & Padrão IDEATION & Ideia ou projeto \\
+\hline
+target\_\allowbreak{}audience & VARCHAR(255) & Sim &  & Público-alvo (RN01) \\
+\hline
+pedagogical\_\allowbreak{}objective & TEXT & Sim &  & Objetivo pedagógico (RN01) \\
+\hline
+team\_\allowbreak{}id & BIGINT & Não & FK teams, CASCADE & Equipe \\
+\hline
+user\_\allowbreak{}id & BIGINT & Sim & FK users, SET NULL & Autor \\
+\hline
+column\_\allowbreak{}id & BIGINT & Sim & FK board\_\allowbreak{}columns, SET NULL & Coluna atual (nula para ideias) \\
+\hline
+tag\_\allowbreak{}id & BIGINT & Sim & FK tags, SET NULL & Etiqueta \\
+\hline
+sort\_\allowbreak{}order & INT & Não & Padrão 0 & Posição na coluna \\
+\hline
+due\_\allowbreak{}date & DATE & Sim &  & Prazo do projeto \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+updated\_\allowbreak{}at & TIMESTAMP & Não & Atualizado a cada mudança & Última alteração \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V3, V6, V8, V10 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{card\_\allowbreak{}tasks} (tarefas dos projetos)}
+\label{tab:dd-card-tasks}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE & Projeto \\
+\hline
+title & VARCHAR(255) & Não &  & Título \\
+\hline
+completed & BOOLEAN & Não & Padrão FALSE & Concluída \\
+\hline
+sort\_\allowbreak{}order & INT & Não & Padrão 0 & Posição \\
+\hline
+assignee\_\allowbreak{}member\_\allowbreak{}id & BIGINT & Sim & FK team\_\allowbreak{}members, SET NULL & Responsável \\
+\hline
+due\_\allowbreak{}date & DATE & Sim &  & Prazo da tarefa \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V6 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{idea\_\allowbreak{}votes} (votos nas ideias)}
+\label{tab:dd-idea-votes}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE & Ideia \\
+\hline
+user\_\allowbreak{}id & BIGINT & Não & FK users, CASCADE & Quem votou \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V8. Restrição da tabela: UQ (kanban\_\allowbreak{}item\_\allowbreak{}id, user\_\allowbreak{}id).
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{card\_\allowbreak{}movements} (histórico de colunas dos projetos)}
+\label{tab:dd-card-movements}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE & Projeto \\
+\hline
+column\_\allowbreak{}id & BIGINT & Sim & FK board\_\allowbreak{}columns, SET NULL & Coluna \\
+\hline
+column\_\allowbreak{}name & VARCHAR(120) & Não &  & Nome da coluna no momento \\
+\hline
+moved\_\allowbreak{}by & BIGINT & Sim & FK users, SET NULL & Quem moveu \\
+\hline
+entered\_\allowbreak{}at & TIMESTAMP & Não & Índice com kanban\_\allowbreak{}item\_\allowbreak{}id & Data da mudança \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{card\_\allowbreak{}reviews} (revisões dos projetos)}
+\label{tab:dd-card-reviews}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE & Projeto \\
+\hline
+reviewer\_\allowbreak{}id & BIGINT & Sim & FK users, SET NULL & Revisor \\
+\hline
+decision & ENUM('APPROVED',\allowbreak 'CHANGES\_\allowbreak{}REQUESTED') & Não &  & Decisão \\
+\hline
+comment & TEXT & Sim &  & Comentário (obrigatório ao pedir ajustes) \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{card\_\allowbreak{}summaries} (resumo automático de cada projeto)}
+\label{tab:dd-card-summaries}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE; UQ & Projeto \\
+\hline
+summary & TEXT & Não &  & Texto do resumo \\
+\hline
+generated\_\allowbreak{}at & TIMESTAMP & Não &  & Data da geração \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{materials} (arquivos dos projetos)}
+\label{tab:dd-materials}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+uuid & CHAR(36) & Não & UQ & Identificador público UUID (RN05) \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE & Projeto \\
+\hline
+uploaded\_\allowbreak{}by & BIGINT & Sim & FK users, SET NULL & Quem enviou \\
+\hline
+file\_\allowbreak{}name & VARCHAR(255) & Não &  & Nome original \\
+\hline
+content\_\allowbreak{}type & VARCHAR(100) & Não &  & Tipo do arquivo \\
+\hline
+size\_\allowbreak{}bytes & BIGINT & Não &  & Tamanho (até 20 MB) \\
+\hline
+storage\_\allowbreak{}key & VARCHAR(255) & Não & UQ & Chave no S3 \\
+\hline
+archived\_\allowbreak{}at & TIMESTAMP & Sim &  & Data do arquivamento no Glacier (RN04) \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{scripts} (roteiro atual de cada projeto)}
+\label{tab:dd-scripts}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+uuid & CHAR(36) & Não & UQ & Identificador público UUID (RN05) \\
+\hline
+kanban\_\allowbreak{}item\_\allowbreak{}id & BIGINT & Não & FK kanban\_\allowbreak{}items, CASCADE; UQ & Projeto \\
+\hline
+content & LONGTEXT & Sim &  & Texto do roteiro \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+updated\_\allowbreak{}at & TIMESTAMP & Não & Atualizado a cada mudança & Última alteração \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V4 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{script\_\allowbreak{}versions} (versões salvas dos roteiros (RN02))}
+\label{tab:dd-script-versions}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+script\_\allowbreak{}id & BIGINT & Não & FK scripts, CASCADE & Roteiro \\
+\hline
+content & LONGTEXT & Não &  & Cópia do texto \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V4.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{courses} (cursos)}
+\label{tab:dd-courses}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+uuid & CHAR(36) & Não & UQ & Identificador público UUID (RN05) \\
+\hline
+team\_\allowbreak{}id & BIGINT & Não & FK teams, CASCADE & Equipe \\
+\hline
+title & VARCHAR(255) & Não &  & Título \\
+\hline
+description & TEXT & Sim &  & Descrição \\
+\hline
+status & ENUM('DRAFT',\allowbreak 'PUBLISHED') & Não & Padrão DRAFT & Situação \\
+\hline
+published\_\allowbreak{}at & TIMESTAMP & Sim &  & Data da publicação \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V7 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{course\_\allowbreak{}modules} (módulos dos cursos)}
+\label{tab:dd-course-modules}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+uuid & CHAR(36) & Não & UQ & Identificador público UUID (RN05) \\
+\hline
+course\_\allowbreak{}id & BIGINT & Não & FK courses, CASCADE & Curso \\
+\hline
+title & VARCHAR(255) & Não &  & Título \\
+\hline
+sort\_\allowbreak{}order & INT & Não & Padrão 0 & Posição \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V7 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{course\_\allowbreak{}lessons} (aulas dos módulos)}
+\label{tab:dd-course-lessons}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+uuid & CHAR(36) & Não & UQ & Identificador público UUID (RN05) \\
+\hline
+module\_\allowbreak{}id & BIGINT & Não & FK course\_\allowbreak{}modules, CASCADE & Módulo \\
+\hline
+title & VARCHAR(255) & Não &  & Título \\
+\hline
+description & TEXT & Sim &  & Descrição \\
+\hline
+content\_\allowbreak{}url & VARCHAR(500) & Sim &  & Link do conteúdo (RN06) \\
+\hline
+type & ENUM('VIDEO',\allowbreak 'TEXT',\allowbreak 'QUIZ') & Não & Padrão VIDEO & Tipo \\
+\hline
+published & BOOLEAN & Não & Padrão FALSE & Publicada \\
+\hline
+sort\_\allowbreak{}order & INT & Não & Padrão 0 & Posição \\
+\hline
+project\_\allowbreak{}id & BIGINT & Sim & FK kanban\_\allowbreak{}items, SET NULL & Projeto de origem \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: V7 e entrega final.
+\fonte{Elaborado pelos autores (2026).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Dicionário de Dados: tabela \texttt{course\_\allowbreak{}lesson\_\allowbreak{}materials} (materiais vinculados às aulas)}
+\label{tab:dd-course-lesson-materials}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{0.8cm}|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
+\hline
+\textbf{Coluna} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Chave ou restrição} & \textbf{Descrição} \\
+\hline
+id & BIGINT & Não & PK, auto incremento & Identificador \\
+\hline
+lesson\_\allowbreak{}id & BIGINT & Não & FK course\_\allowbreak{}lessons, CASCADE & Aula \\
+\hline
+material\_\allowbreak{}id & BIGINT & Não & FK materials, CASCADE & Material \\
+\hline
+created\_\allowbreak{}at & TIMESTAMP & Não & Padrão: data atual & Data de criação \\
+\hline
+\end{tabular}
+\par\footnotesize Migração: entrega final. Restrição da tabela: UQ (lesson\_\allowbreak{}id, material\_\allowbreak{}id).
+\fonte{Elaborado pelos autores (2026).}
 \end{table}
 
 \section{Duração / Cronograma}
@@ -756,21 +1326,23 @@ O modelo de monetização proposto é o SaaS (\textit{Software as a Service}), c
 \small
 \caption{Planos de Assinatura}
 \label{tab:planos}
-\begin{tabular}{|>{\raggedright\arraybackslash}p{2cm}|>{\raggedright\arraybackslash}p{3.6cm}|r|>{\raggedright\arraybackslash}p{6cm}|}
+\begin{tabular}{|l|r|c|>{\centering\arraybackslash}p{1.7cm}|>{\centering\arraybackslash}p{1.7cm}|>{\centering\arraybackslash}p{1.8cm}|c|}
 \hline
-\textbf{Plano} & \textbf{Público} & \textbf{Preço Mensal} & \textbf{Funcionalidades} \\
+\textbf{Plano} & \textbf{Preço mensal} & \textbf{Usuários} & \textbf{Projetos ativos} & \textbf{Cursos} & \textbf{Resumo automático} & \textbf{Materiais} \\
 \hline
-Gratuito & Quem quer conhecer o sistema & R\$ 0,00 & 1 usuário, até 3 projetos ativos, 1 curso, até 100 MB de materiais e sem resumo automático \\
+Gratuito & R\$ 0,00 & 1 & 3 & 1 & Não & 100 MB \\
 \hline
-Solo & Professor autônomo & R\$ 49,00 & 1 usuário, até 10 projetos ativos \\
+Solo & R\$ 49,00 & 1 & 10 & 5 & Não & 1 GB \\
 \hline
-Pro & Criador profissional & R\$ 99,00 & 1 usuário, projetos ilimitados, automações \\
+Pro & R\$ 99,00 & 1 & Ilimitados & Ilimitados & Sim & 5 GB \\
 \hline
-Agência & Pequenas equipes & R\$ 249,00 & Até 5 usuários, controle de acesso completo (RBAC) \\
+Agência & R\$ 249,00 & 5 & Ilimitados & Ilimitados & Sim & 20 GB \\
 \hline
 \end{tabular}
-\par\small Fonte: Produzido pelos autores.
+\fonte{Elaborado pelos autores (2026).}
 \end{table}
+
+Em todos os planos estão disponíveis o editor de roteiro, as versões, a exportação e os alertas de prazo. As regras de limite e do teste grátis estão descritas na RN07. Como o plano Gratuito e o teste de 14 dias fazem parte do produto, eles entram nos três cenários a seguir, e não só no cenário pessimista.
 
 Como os planos pagos têm preços diferentes, a receita depende de quantos assinantes escolhem cada um. Por isso, em cada cenário a seguir é mostrado o mix de planos usado no cálculo. As premissas da equipe são:
 

@@ -10,16 +10,17 @@ platform designed specifically to centralize and optimize the production pipelin
 digital educational content creators. The methodology adopted is Scrum, with 
 biweekly Sprints, a five-member team with distinct technical roles and a versioned 
 repository on GitHub. The system architecture follows the decoupled Client-Server 
-pattern, with a React.js front-end, a Java Spring Boot back-end, a MySQL relational 
-database normalized to Third Normal Form and infrastructure provisioned on Amazon 
-Web Services. The platform offers modules for idea management, a Kanban workflow 
+pattern, with a Next.js front-end, a Java Spring Boot back-end, a MySQL relational 
+database normalized to Third Normal Form and infrastructure on Amazon Web Services,
+with Docker containers orchestrated by Amazon EKS. The platform offers modules for idea management, a Kanban workflow 
 with production states, a script editor, digital asset upload integrated with AWS S3, 
 Python-based automations and curricular structuring into Courses, Modules and 
-Lessons. Security is implemented through JWT authentication, BCrypt encryption and 
-HTTPS communication, in compliance with the Brazilian General Data Protection Law 
+Lessons. Security is implemented through JWT authentication, BCrypt encryption and
+role-based access control, in compliance with the Brazilian General Data Protection Law 
 (LGPD). The financial viability analysis demonstrates the sustainability of the SaaS 
-model with three subscription plans, presenting an operating margin above 90\% from 
-the seventh month in the realistic scenario. The results indicate that a tool with native 
+model, with a Free plan and three paid plans: in the realistic scenario, revenue covers
+the infrastructure cost from the first quarter, and the operating margin reaches
+86.2\% from the seventh month. The results indicate that a tool with native 
 semantics for the educational domain reduces the creator's operational fragmentation 
 and creates the technical conditions for applying andragogical principles in the 
 production of digital courses.
