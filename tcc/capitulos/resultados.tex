@@ -306,6 +306,44 @@ O diagrama abaixo mostra as partes do sistema e como elas se comunicam.
     \legend{Fonte: Produzido pelos autores.}
 \end{figure}
 
+\subsection{Diagrama de Componentes}
+
+O diagrama de componentes mostra as partes internas de cada aplicação e como elas dependem umas das outras (visão \textit{white-box}). A Figura~\ref{fig:componentes} apresenta o \textit{front-end}, o \textit{back-end} e os serviços externos com que eles se comunicam.
+
+No \textit{front-end}, as telas e funcionalidades (autenticação, painel, ideias, quadro Kanban, detalhes do \textit{card}, editor de roteiro, cursos, equipes e configurações do usuário) usam o módulo de estado (\texttt{useAppStore}) e o controle de acesso por papel (\texttt{roles.ts}). O módulo de estado é quem chama a API, por meio do cliente HTTP (\texttt{api.ts}).
+
+No \textit{back-end}, toda requisição passa primeiro pelo módulo de segurança, que valida o \textit{token} com o módulo JWT, e depois chega aos \textit{controllers}. Os \textit{controllers} chamam os casos de uso e serviços de cada módulo de domínio, e estes acessam o banco pela camada de repositório (Spring Data JPA/Hibernate), seguindo as camadas descritas na seção anterior. Alguns módulos falam com serviços de fora da aplicação: o Summary Module chama o serviço Python (\texttt{POST /summarize}), o Material Module guarda os arquivos no Amazon S3 e o Email Module envia os e-mails pelo servidor SMTP. As rotinas agendadas (\textit{Scheduled Jobs}) rodam no próprio Spring Boot: apagam códigos de verificação vencidos, enviam o e-mail diário de prazos e arquivam os materiais antigos. Os três contêineres enviam seus \textit{logs} ao Amazon CloudWatch.
+
+\begin{figure}[p]
+    \centering
+    \rotatebox{90}{%
+    \begin{minipage}{0.95\textheight}
+        \centering
+        \caption{Diagrama de Componentes (\textit{White-Box}) - Creator Workbench}
+        \label{fig:componentes}
+        \includegraphics[width=\linewidth,height=14cm,keepaspectratio]{imagens/Diagrama_Componentes.pdf}
+        \legend{Fonte: Produzido pelos autores.}
+    \end{minipage}}
+\end{figure}
+
+\subsection{Diagrama de Implantação}
+
+O diagrama de implantação mostra em que infraestrutura cada parte do sistema roda (Figura~\ref{fig:implantacao}). O usuário acessa o sistema pelo navegador, no computador ou no celular, por HTTP. O acesso chega ao Elastic Load Balancing, dentro da VPC da AWS, que o entrega ao contêiner do \textit{front-end}.
+
+O \textit{cluster} Amazon EKS tem três \textit{namespaces}, um para cada contêiner: \textit{front-end} (Nginx servindo o Next.js em exportação estática), \textit{back-end} (Spring Boot) e automação (serviço em Python). O \textit{front-end} encaminha as chamadas para o \textit{back-end}, que por sua vez chama o serviço de automação. Fora do \textit{cluster} ficam os serviços de apoio: o Amazon RDS (banco de dados MySQL), o Amazon S3 (arquivos e mídias), cujos materiais de cursos publicados há mais de 30 dias passam para a classe S3 Glacier, o Amazon ECR (imagens Docker), o Amazon CloudWatch (\textit{logs}, métricas e alarmes) e o servidor SMTP, usado pelo \textit{back-end} para os e-mails de cadastro, convites e alertas de prazo.
+
+\begin{figure}[p]
+    \centering
+    \rotatebox{90}{%
+    \begin{minipage}{0.95\textheight}
+        \centering
+        \caption{Diagrama de Implantação - Creator Workbench}
+        \label{fig:implantacao}
+        \includegraphics[width=\linewidth,height=14cm,keepaspectratio]{imagens/Diagrama_Implantacao.pdf}
+        \legend{Fonte: Produzido pelos autores.}
+    \end{minipage}}
+\end{figure}
+
 \subsection{Integração com o Serviço de Automação}
 
 O requisito RF08 usa um serviço de automação escrito em Python, que roda em um contêiner próprio, para gerar o resumo do projeto. O resumo exige um roteiro com pelo menos 100 palavras. Com menos que isso, o \textit{back-end} recusa o pedido antes de chamar o serviço e informa que não há dados suficientes. O último resumo gerado fica salvo no projeto, com a data de geração, e pode ser gerado de novo depois de mudanças no roteiro.
@@ -539,13 +577,20 @@ O DER mostra como o modelo conceitual virou tabelas no banco de dados, com as co
 
 \subsection{Diagrama de Classes}
 
-O diagrama de classes mostra como as entidades do sistema são representadas no código do \textit{back-end}.
+O diagrama de classes mostra como as entidades do sistema são representadas no código do \textit{back-end} (Figura~\ref{fig:classes}). São 22 classes e 9 enumerações, agrupadas por módulo: usuários e equipes; quadro, ideias e projetos; materiais e roteiro; cursos; e códigos de verificação.
 
-\begin{figure}[H]
-    \caption{Diagrama de Classes - Creator Workbench}
+Cada classe mostra seus atributos e métodos, com a visibilidade de cada um. As ligações com losango preenchido indicam composição, em que a parte não existe sem o todo: uma tarefa, por exemplo, só existe dentro de um projeto. As demais ligações são associações simples, com as multiplicidades em cada ponta. Os atributos marcados com barra (/), como o progresso e a situação da revisão do projeto, são derivados: o sistema os calcula e eles não são gravados no banco. A classe \textit{LessonMaterial} é uma classe de associação, que liga uma aula a um material.
+
+\begin{figure}[p]
     \centering
-    \includegraphics[width=\textwidth]{imagens/diagrama_classes}
-    \legend{Fonte: Produzido pelos autores.}
+    \rotatebox{90}{%
+    \begin{minipage}{0.95\textheight}
+        \centering
+        \caption{Diagrama de Classes - Creator Workbench}
+        \label{fig:classes}
+        \includegraphics[width=\linewidth,height=14cm,keepaspectratio]{imagens/diagrama-de-classes.pdf}
+        \legend{Fonte: Produzido pelos autores.}
+    \end{minipage}}
 \end{figure}
 
 \subsection{Dicionário de Dados}
