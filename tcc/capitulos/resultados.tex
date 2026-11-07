@@ -103,7 +103,7 @@ Sair da equipe & Sim & Sim & Sim \\
     \item \textbf{RF04:} ter um sistema de votação para priorizar as ideias em equipe. O \textit{card} mostra o total de votos, e a Caixa de Entrada pode ser ordenada por votos.
 \end{itemize}
 
-\textbf{Módulo de Produção (Workflow)}
+\textbf{Módulo de Produção (\textit{Workflow})}
 
 \begin{itemize}
     \item \textbf{RF05:} oferecer um quadro \textit{Kanban} com colunas configuráveis por equipe. As colunas padrão são Pesquisa, Roteiro, Gravação e Edição. Cada projeto tem tarefas com responsável e prazo, e o progresso é calculado automaticamente pelas tarefas concluídas.
@@ -118,7 +118,7 @@ Sair da equipe & Sim & Sim & Sim \\
     \item \textbf{RF09:} mostrar um painel de alertas com os projetos e as tarefas atrasados ou que vencem nos próximos 3 dias. Todos os dias, às 8h (horário de Brasília), cada pessoa recebe um único e-mail com os prazos vencidos e próximos de todas as suas equipes.
 \end{itemize}
 
-\textbf{Módulo de Estruturação Curricular (LMS Ready)}
+\textbf{Módulo de Estruturação Curricular (LMS \textit{Ready})}
 
 \begin{itemize}
     \item \textbf{RF10:} permitir a criação de cursos e a organização dos conteúdos em módulos e aulas (vídeo, texto ou questionário).
@@ -372,7 +372,7 @@ Resposta: { "summary": "<texto do resumo>" }
 
 As tecnologias foram escolhidas para atender aos requisitos do projeto e à experiência da equipe.
 
-\subsection{Front-end}
+\subsection{\textit{Front-end}}
 
 O \textit{front-end} é uma \textit{Single Page Application} (SPA) feita com Next.js e React, exportada como arquivos estáticos. Ele usa o \textit{fetch} nativo do navegador para chamar os \textit{endpoints} da API REST e o Zustand para guardar o estado global (equipe ativa, quadro, ideias e cursos).
 
@@ -397,9 +397,9 @@ TipTap & - & Editor de texto rico do Estúdio de Escrita \\
 \end{tabular}
 \end{table}
 
-\subsection{Back-end}
+\subsection{\textit{Back-end}}
 
-A API REST segue o nível 2 do Richardson Maturity Model: recursos com nomes claros, verbos HTTP corretos e respostas padronizadas com códigos de status HTTP.
+A API REST segue o nível 2 do \textit{Richardson Maturity Model}: recursos com nomes claros, verbos HTTP corretos e respostas padronizadas com códigos de status HTTP.
 
 \begin{table}[H]
 \centering
@@ -558,7 +558,7 @@ A figura a seguir apresenta o MER do Creator Workbench.
 \begin{figure}[H]
     \caption{Modelo Entidade-Relacionamento - Creator Workbench}
     \centering
-    \includegraphics[width=\textwidth]{imagens/der.pdf}
+    \includegraphics[width=\textwidth]{imagens/mer.pdf}
     \label{fig:mer}
     \legend{Fonte: Produzido pelos autores.}
 \end{figure}
@@ -570,7 +570,7 @@ O DER mostra como o modelo conceitual virou tabelas no banco de dados, com as co
 \begin{figure}[H]
     \caption{Diagrama Entidade-Relacionamento - Creator Workbench}
     \centering
-    \includegraphics[width=\textwidth]{imagens/mer.pdf}
+    \includegraphics[width=\textwidth]{imagens/der.pdf}
     \label{fig:der}
     \legend{Fonte: Produzido pelos autores.}
 \end{figure}
@@ -672,31 +672,31 @@ O cronograma mostra quanto tempo o projeto leva e o que é entregue em cada etap
 
 \subsection{Análise da Duração do Projeto}
 
-O projeto é organizado em 8 Sprints quinzenais, totalizando aproximadamente 16 semanas de desenvolvimento. A duração foi definida pela complexidade do escopo do MVP, e não pelo calendário do semestre, conforme a orientação metodológica. A Tabela~\ref{tab:cronograma} mostra o planejamento inicial, e a Tabela~\ref{tab:sprints}, no capítulo de Gestão do Projeto, mostra o que foi de fato entregue em cada Sprint.
+O projeto é organizado em 8 \textit{Sprints} quinzenais, totalizando aproximadamente 16 semanas de desenvolvimento. A duração foi definida pela complexidade do escopo do MVP, e não pelo calendário do semestre, conforme a orientação metodológica. A Tabela~\ref{tab:cronograma} mostra o planejamento inicial, e a Tabela~\ref{tab:sprints}, no capítulo de Gestão do Projeto, mostra o que foi de fato entregue em cada \textit{Sprint}.
 
 \begin{table}[H]
 \centering
-\caption{Cronograma de Sprints (planejamento inicial)}
+\caption{Cronograma de \textit{Sprints} (planejamento inicial)}
 \label{tab:cronograma}
 \begin{tabular}{|l|l|p{8cm}|}
 \hline
-\textbf{Sprint} & \textbf{Duração} & \textbf{Entregas Previstas} \\
+\textbf{\textit{Sprint}} & \textbf{Duração} & \textbf{Entregas Previstas} \\
 \hline
-Sprint 1 & Semanas 1--2 & \textit{Setup} da infraestrutura (AWS, Docker, CI), modelagem do banco de dados \\
+\textit{Sprint} 1 & Semanas 1--2 & \textit{Setup} da infraestrutura (AWS, Docker, CI), modelagem do banco de dados \\
 \hline
-Sprint 2 & Semanas 3--4 & Módulo de autenticação e equipes (RF01, RF02, RNF01, RNF03) \\
+\textit{Sprint} 2 & Semanas 3--4 & Módulo de autenticação e equipes (RF01, RF02, RNF01, RNF03) \\
 \hline
-Sprint 3 & Semanas 5--6 & Módulo de Gestão de Ideias, Caixa de Entrada (RF03, RF04) \\
+\textit{Sprint} 3 & Semanas 5--6 & Módulo de Gestão de Ideias, Caixa de Entrada (RF03, RF04) \\
 \hline
-Sprint 4 & Semanas 7--8 & Módulo de Produção, \textit{Kanban} e tarefas (RF05) \\
+\textit{Sprint} 4 & Semanas 7--8 & Módulo de Produção, \textit{Kanban} e tarefas (RF05) \\
 \hline
-Sprint 5 & Semanas 9--10 & Materiais e Estúdio de Escrita (RF06, RF07) \\
+\textit{Sprint} 5 & Semanas 9--10 & Materiais e Estúdio de Escrita (RF06, RF07) \\
 \hline
-Sprint 6 & Semanas 11--12 & Módulo de Automação, resumo e alertas (RF08, RF09) \\
+\textit{Sprint} 6 & Semanas 11--12 & Módulo de Automação, resumo e alertas (RF08, RF09) \\
 \hline
-Sprint 7 & Semanas 13--14 & Módulo Curricular, Cursos, Módulos, Aulas, exportação (RF10, RF11) \\
+\textit{Sprint} 7 & Semanas 13--14 & Módulo Curricular, Cursos, Módulos, Aulas, exportação (RF10, RF11) \\
 \hline
-Sprint 8 & Semanas 15--16 & Testes, ajustes de performance, documentação final \\
+\textit{Sprint} 8 & Semanas 15--16 & Testes, ajustes de performance, documentação final \\
 \hline
 \end{tabular}
 \end{table}
